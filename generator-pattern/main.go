@@ -1,26 +1,37 @@
+// write a generator function which returns a channel
+// call a goroutine to return random integer less than or equal to n
 package main
 
 import (
 	"fmt"
-	"sync"
+	"math/rand"
 )
 
-var wg sync.WaitGroup
+type node struct {
+	number  int
+	message string
+}
 
 func main() {
-	for c := range fibonacci(1000000) {
-		fmt.Printf("Fibonacci number is %d \n", c)
+	for val := range generate(5) {
+		fmt.Println(val)
 	}
 }
 
-func fibonacci(n int) <-chan int {
-	out := make(chan int)
+func generate(n int) <-chan node {
+	ch := make(chan node)
+
 	go func() {
-		defer close(out)
-		fmt.Println("Hello, I am the producer")
-		for i, j := 0, 1; i < n; i, j = i+j, i {
-			out <- i
+		defer close(ch)
+
+		for i := 0; i < n; i++ {
+			num := rand.Intn(n) + 1
+
+			ch <- node{
+				number:  num,
+				message: fmt.Sprintf("Your random number is %d", num),
+			}
 		}
 	}()
-	return out
+	return ch
 }
